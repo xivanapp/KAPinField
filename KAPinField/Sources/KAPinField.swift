@@ -63,6 +63,10 @@ public struct KAPinFieldAppearance {
     public var backActiveColor : UIColor = .clear
     public var backBorderActiveColor : UIColor = .black
     public var backRounded : Bool = false
+    public var underlineColor: UIColor = .clear
+    public var underlineFocusColor: UIColor = .clear
+    public var underlineErrorColor: UIColor = .clear
+    public var underlineBorderWith: CGFloat = 0
 }
 
 // Mark: - KAPinField Class
@@ -133,6 +137,7 @@ public class KAPinField : UITextField {
     
     private var attributes: [NSAttributedString.Key : Any] = [:]
     private var backViews: [UIView] = [UIView]()
+    private var underlineViews: [UIView] = [UIView]()
     private var isAnimating: Bool = false
     private var lastEntry: String = ""
     private var timer : Timer?
@@ -140,6 +145,7 @@ public class KAPinField : UITextField {
     private var previousCode : String?
     private var isDynamicLength = false
     private var toolbar : UIToolbar?
+    private var isFailure: Bool = false
     
     // Mark: - UIKeyInput
     public override func insertText(_ text: String) {
@@ -228,6 +234,12 @@ public class KAPinField : UITextField {
             }
             
             v.frame = vFrame
+            
+            let underline = self.underlineViews[index]
+            underline.frame = CGRect(x: vFrame.origin.x,
+                                     y: vFrame.maxY - self.appearance.underlineBorderWith,
+                                     width: vFrame.width,
+                                     height: self.appearance.underlineBorderWith)
         }
     }
     
@@ -238,6 +250,10 @@ public class KAPinField : UITextField {
     }
     
     public func animateFailure(_ completion : (() -> Void)? = nil) {
+        isFailure = true
+        for underlineView in underlineViews {
+            underlineView.backgroundColor = appearance.underlineErrorColor
+        }
         
         guard !self.isAnimating else {
             return
@@ -272,6 +288,9 @@ public class KAPinField : UITextField {
         UIView.animate(withDuration: 0.2, animations: {
             
             for v in self.backViews {
+                v.alpha = 0
+            }
+            for v in self.underlineViews {
                 v.alpha = 0
             }
             
@@ -360,7 +379,7 @@ public class KAPinField : UITextField {
         }
 
         self.addSubview(self.invisibleField)
-        self.invisibleField.addTarget(self, action: #selector(reloadAppearance), for: .allEditingEvents)
+        self.invisibleField.addTarget(self, action: #selector(handleEditting), for: .allEditingEvents)
         
         // Prepare visible field
         self.tintColor = .clear // Hide cursor
@@ -371,8 +390,16 @@ public class KAPinField : UITextField {
         for v in self.backViews {
             v.removeFromSuperview()
         }
+        for v in self.underlineViews {
+            v.removeFromSuperview()
+        }
         self.backViews.removeAll(keepingCapacity: false)
+        self.underlineViews.removeAll(keepingCapacity: false)
         for _ in 0..<self.properties.numberOfCharacters {
+            let underline = UIView()
+            underlineViews.append(underline)
+            self.addSubview(underline)
+            self.sendSubviewToBack(underline)
             let v = UIView()
             backViews.append(v)
             self.addSubview(v)
@@ -440,6 +467,11 @@ public class KAPinField : UITextField {
             v.layer.borderColor = self.appearance.backBorderColor.cgColor
             v.layer.borderWidth = self.appearance.backBorderWidth
             v.layer.cornerRadius = self.appearance.backCornerRadius
+        }
+        
+        for v in self.underlineViews {
+            v.alpha = 1.0
+            v.backgroundColor = isFailure ? self.appearance.underlineErrorColor : self.appearance.underlineColor
         }
         
         self.sanitizeText()
@@ -524,6 +556,16 @@ public class KAPinField : UITextField {
         self.checkCodeValidity()
     }
     
+    @objc private func handleEditting() {
+        // Note: Don't reset when input repeatly
+        let text = self.invisibleField.text ?? ""
+        if isFailure && text.count < self.properties.numberOfCharacters {
+            isFailure = false
+        }
+        
+        reloadAppearance()
+    }
+    
     private func sanitizeText() {
         var text = self.invisibleField.text ?? ""
         
@@ -600,6 +642,8 @@ public class KAPinField : UITextField {
                             let backView = self.backViews[backIndex]
                             backView.backgroundColor = self.appearance.backFocusColor
                             backView.layer.borderColor = self.appearance.backBorderFocusColor.cgColor
+                            let underline = self.underlineViews[backIndex]
+                            underline.backgroundColor = self.appearance.underlineFocusColor
                         }
                     }
                 }

@@ -79,6 +79,8 @@ class ViewController: UIViewController {
         }
         
         pinField.updateAppearence { appearance in
+            // Rounded rect style
+            /*
             appearance.tokenColor = UIColor.clear
             appearance.tokenFocusColor = UIColor.clear
             appearance.textColor = UIColor.label
@@ -94,6 +96,28 @@ class ViewController: UIViewController {
             appearance.backActiveColor = UIColor.clear
             appearance.backBorderActiveColor = UIColor.label
             appearance.backRounded = false
+             */
+            
+            // Underline style
+            appearance.tokenColor = UIColor.clear
+            appearance.tokenFocusColor = UIColor.clear
+            appearance.textColor = UIColor.label
+            appearance.font = .menlo(40)
+            appearance.kerning = 24
+            appearance.backOffset = 8
+            appearance.backColor = UIColor.clear
+            appearance.backBorderWidth = 0
+            appearance.backBorderColor = .clear
+            appearance.backCornerRadius = 0
+            appearance.backFocusColor = UIColor.clear
+            appearance.backBorderFocusColor = .clear
+            appearance.backActiveColor = .clear
+            appearance.backBorderActiveColor = .clear
+            appearance.backRounded = false
+            appearance.underlineColor = .gray
+            appearance.underlineFocusColor = .blue
+            appearance.underlineErrorColor = .red
+            appearance.underlineBorderWith = 1
         }
     }
 }
@@ -105,7 +129,6 @@ extension ViewController : KAPinFieldDelegate {
             print("Valid input: \(string) ")
         } else {
             print("Invalid input: \(string) ")
-            self.pinField.animateFailure()
         }
     }
     
