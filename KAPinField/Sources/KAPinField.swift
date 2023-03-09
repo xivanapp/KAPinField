@@ -123,7 +123,7 @@ public class KAPinField : UITextField {
     // this is necessary for iOS12 .oneTimePassword feature
     // Remove textField.inputView = UIView() to fix issue with keyboard
     private var invisibleField: UITextField = {
-        let textField = UITextField()
+        let textField = NoSelectionTextField()
         return textField
     }()
     private var invisibleText : String {
@@ -674,6 +674,20 @@ private extension UITextInput {
         let location = offset(from: beginningOfDocument, to: range.start)
         let length = offset(from: range.start, to: range.end)
         return NSRange(location: location, length: length)
+    }
+}
+
+private class NoSelectionTextField: UITextField {
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        return false
+    }
+
+    override func selectionRects(for range: UITextRange) -> [UITextSelectionRect] {
+        return []
+    }
+
+    override func caretRect(for position: UITextPosition) -> CGRect {
+        return .null
     }
 }
 
