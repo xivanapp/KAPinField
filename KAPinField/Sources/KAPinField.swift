@@ -333,7 +333,6 @@ public class KAPinField : UITextField {
             return
         }
         
-        self.endEditing(true)
         if isDynamicLength {
             if self.inputAccessoryView == nil {
                 
